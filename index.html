@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerador de Card — GDB Cargas</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f0; min-height: 100vh; padding: 1rem; }
+    h1 { font-size: 18px; font-weight: 700; color: #1a472a; margin-bottom: 16px; text-align: center; }
+    .wrap { max-width: 480px; margin: 0 auto; display: none; }
+    #login-screen { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 2rem); }
+    #login-card { width: 100%; max-width: 420px; background: #ffffff; border: 1px solid #e0e0d8; border-radius: 18px; padding: 28px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08); }
+    #login-card h1 { font-size: 24px; margin-bottom: 18px; color: #123f2b; text-align: center; }
+    #login-card .field { margin-bottom: 14px; }
+    #login-card .gen-btn { margin-top: 6px; }
+    .section { background: #fff; border: 1px solid #e0e0d8; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 12px; }
+    .section h3 { font-size: 11px; font-weight: 600; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field { margin-bottom: 10px; }
+    .field label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
+    .field input, .field select, .field textarea {
+      width: 100%; font-size: 14px; padding: 9px 12px;
+      border: 1px solid #ddd; border-radius: 8px; outline: none;
+      background: #fafafa; color: #111;
+    }
+    .field textarea { min-height: 76px; resize: vertical; font-family: inherit; line-height: 1.35; }
+    .field input:focus, .field textarea:focus { border-color: #1a472a; background: #fff; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .fruit-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .fruit-btn {
+      border: 1px solid #e0e0d8; border-radius: 8px; padding: 9px 6px;
+      background: #fafafa; cursor: pointer; font-size: 13px; color: #222;
+      text-align: center; transition: all 0.15s;
+    }
+    .fruit-btn.active { background: #1a472a; color: #fff; border-color: #1a472a; }
+    .fruit-btn:hover:not(.active) { background: #f0f0e8; }
+    .truck-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .truck-btn {
+      border: 1px solid #e0e0d8; border-radius: 8px; padding: 9px 4px;
+      background: #fafafa; cursor: pointer; font-size: 12px; color: #222;
+      text-align: center; transition: all 0.15s;
+    }
+    .truck-btn.active { background: #1a472a; color: #fff; border-color: #1a472a; }
+    .truck-btn:hover:not(.active) { background: #f0f0e8; }
+    .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .body-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .choice-btn, .body-btn {
+      border: 1px solid #e0e0d8; border-radius: 8px; padding: 9px 4px;
+      background: #fafafa; cursor: pointer; font-size: 12px; color: #222;
+      text-align: center; transition: all 0.15s;
+    }
+    .choice-btn.active, .body-btn.active { background: #1a472a; color: #fff; border-color: #1a472a; }
+    .choice-btn:hover:not(.active), .body-btn:hover:not(.active) { background: #f0f0e8; }
+    #body-section { display: none; }
+    .gen-btn {
+      width: 100%; padding: 14px; background: #1a472a; color: #fff;
+      border: none; border-radius: 12px; font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-top: 4px; transition: opacity 0.15s;
+    }
+    .gen-btn:hover { opacity: 0.88; }
+    #preview-wrap { margin-top: 16px; display: none; }
+    #card-canvas { display: block; width: 100%; border-radius: 12px; border: 1px solid #ddd; }
+    .dl-btn {
+      width: 100%; padding: 13px; background: #fff; color: #1a472a;
+      border: 1.5px solid #1a472a; border-radius: 12px; font-size: 14px;
+      font-weight: 600; cursor: pointer; margin-top: 10px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .dl-btn:hover { background: #f0f7f2; }
+    .custom-fruit-row { display: flex; gap: 6px; margin-top: 8px; }
+    .custom-fruit-row input {
+      flex: 1; font-size: 13px; padding: 8px 10px;
+      border: 1px solid #ddd; border-radius: 8px; outline: none; background: #fafafa;
+    }
+    .custom-fruit-row button {
+      padding: 0 14px; background: #f0f0e8; border: 1px solid #ddd;
+      border-radius: 8px; cursor: pointer; font-size: 13px; color: #222;
+      white-space: nowrap;
+    }
+    .custom-fruit-row button:hover { background: #e4e4dc; }
+  </style>
+</head>
+<body>
+<div id="login-screen">
+  <div id="login-card">
+    <h1>Login GDB Cargas</h1>
+    <form id="login-form">
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="seu@email.com" required />
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="login-pass" placeholder="Senha" required />
+      </div>
+      <button type="submit" class="gen-btn">Entrar</button>
+      <p style="color:#647067; margin-top:12px; font-size:13px;">Use o e-mail e senha corretos para acessar a página.</p>
+    </form>
+  </div>
+</div>
+<div class="wrap">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;">
+    <h1 style="margin:0;">🚚 Gerador de Card — GDB Cargas</h1>
+    <button class="gen-btn" style="width:auto; padding:10px 16px; font-size:13px;" onclick="handleLogout()">Logout</button>
+  </div>
+
+  <div class="section">
+    <h3>Fruta</h3>
+    <div class="fruit-grid" id="fruit-grid">
+      <button class="fruit-btn" data-fruit="Limão" data-emoji="🍋">🍋 Limão</button>
+      <button class="fruit-btn" data-fruit="Abacate" data-emoji="🥑">🥑 Abacate</button>
+      <button class="fruit-btn" data-fruit="Ponkan" data-emoji="🍊">🍊 Ponkan</button>
+      <button class="fruit-btn" data-fruit="Tomate" data-emoji="🍅">🍅 Tomate</button>
+      <button class="fruit-btn" data-fruit="Batata Doce" data-emoji="🥔">🥔 Batata Doce</button>
+      <button class="fruit-btn" data-fruit="Manga" data-emoji="🥭">🥭 Manga</button>
+      <button class="fruit-btn" data-fruit="Melancia" data-emoji="🍉">🍉 Melancia</button>
+      <button class="fruit-btn" data-fruit="Melão" data-emoji="🍈">🍈 Melão</button>
+      <button class="fruit-btn" data-fruit="Uva" data-emoji="🍇">🍇 Uva</button>
+      <button class="fruit-btn" data-fruit="Mamão" data-emoji="🍈">🍈 Mamão</button>
+      <button class="fruit-btn" data-fruit="Banana" data-emoji="🍌">🍌 Banana</button>
+    </div>
+    <div class="custom-fruit-row">
+      <input type="text" id="custom-fruit-input" placeholder="Outra fruta..." />
+      <button onclick="addCustomFruit()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Com caixa?</h3>
+    <div class="choice-grid" id="box-grid">
+      <button class="choice-btn active" data-box="sim">Sim</button>
+      <button class="choice-btn" data-box="nao">Não</button>
+    </div>
+  </div>
+
+  <div class="section" id="capacity-section">
+    <h3>Quantidade (caixas)</h3>
+    <div class="row2">
+      <div class="field">
+        <label>Mínimo</label>
+        <input type="number" id="cap-min" value="700" min="100" step="50" />
+      </div>
+      <div class="field">
+        <label>Máximo</label>
+        <input type="number" id="cap-max" value="900" min="100" step="50" />
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="body-section">
+    <h3>Tipo de carroceria</h3>
+    <div class="body-grid" id="body-grid">
+      <button class="body-btn" data-body="Madeira">Madeira</button>
+      <button class="body-btn" data-body="Câmara Fria">Câmara Fria</button>
+      <button class="body-btn" data-body="Baú">Baú</button>
+      <button class="body-btn" data-body="Com Gradinhas">Com Gradinhas</button>
+      <button class="body-btn" data-body="Graneleiro">Graneleiro</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Tipo de caminhão</h3>
+    <div class="truck-grid" id="truck-grid">
+      <button class="truck-btn" data-truck="Truck">Truck</button>
+      <button class="truck-btn" data-truck="Bitruck">Bitruck</button>
+      <button class="truck-btn" data-truck="Truck ou Bitruck">Truck ou Bitruck</button>
+      <button class="truck-btn" data-truck="Bitruck ou Carretinha 2 eixos">Bitruck ou Carretinha 2 eixos</button>
+      <button class="truck-btn" data-truck="Carretinha 2 eixos">Carretinha 2 eixos</button>
+      <button class="truck-btn" data-truck="Carreta LS">Carreta LS</button>
+      <button class="truck-btn" data-truck="Carreta 4 eixo">Carreta 4 eixo</button>
+    </div>
+  </div>
+
+  <div class="section" id="truck-length-section" style="display:none;">
+    <h3>Metragem desejada</h3>
+    <div class="field">
+      <label>Informe a metragem</label>
+      <input type="text" id="truck-length" placeholder="Ex: 14,60" />
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Dia de carregamento</h3>
+    <div class="field">
+      <label>Data ou dia</label>
+      <input type="date" id="load-day" />
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Observações</h3>
+    <div class="field">
+      <label>Texto principal do card</label>
+      <textarea id="notes" placeholder="Ex: Preciso de caminhão refrigerado para carga urgente"></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Rota</h3>
+    <div class="field">
+      <label>Origem</label>
+      <input type="text" id="origin" placeholder="Ex: Itajobi SP" />
+    </div>
+    <div class="field">
+      <label>Destino</label>
+      <input type="text" id="dest" placeholder="Ex: Brasília DF" />
+    </div>
+  </div>
+
+  <button class="gen-btn" onclick="generateCard()">✦ Gerar card</button>
+
+  <div id="preview-wrap">
+    <canvas id="card-canvas" width="1080" height="1350"></canvas>
+    <button class="dl-btn" onclick="downloadCard()">⬇ Baixar imagem para WhatsApp</button>
+  </div>
+</div>
+
+
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+  // SUAS CONFIGURAÇÕES DO FIREBASE (Copie do Console do Firebase)
+  const firebaseConfig = {
+    apiKey: "AIzaSyC9wpvmysxQT1NWp80aA4ggtbVQ22Z7Usg",
+    authDomain: "gdbcargas-596b8.firebaseapp.com",
+    projectId: "gdbcargas-596b8",
+    storageBucket: "gdbcargas-596b8.firebasestorage.app",
+    messagingSenderId: "372021762891",
+    appId: "1:372021762891:web:9a49fec4be459b86f8a6ce"
+  };
+
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // --- LÓGICA DE INTERFACE ---
+
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.querySelector('.wrap').style.display = 'block';
+  }
+
+  function showLoginScreen() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.querySelector('.wrap').style.display = 'none';
+  }
+
+  // Monitorar se o usuário está logado ou não (Persistência Automática)
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      showApp();
+    } else {
+      showLoginScreen();
+    }
+  });
+
+  // Função de Login
+  async function handleLogin(event) {
+    event.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-pass').value;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // O onAuthStateChanged cuidará de mostrar a tela do app
+    } catch (error) {
+      console.error("Erro ao logar:", error.code);
+      alert('E-mail ou senha inválidos ou erro de conexão.');
+    }
+  }
+
+  // Função de Logout
+  window.handleLogout = async function() {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      alert("Erro ao sair.");
+    }
+  };
+
+  // Atribuindo o evento ao formulário
+  document.getElementById('login-form').addEventListener('submit', handleLogin);
+
+  // --- O RESTANTE DO SEU CÓDIGO (Gerador de Card) CONTINUA ABAIXO ---
+  // Mantenha suas funções de desenho (roundRect, generateCard, etc.) 
+</script>
+
+  function formatDateInputValue(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function setLoadDayBounds() {
+    const dateInput = document.getElementById('load-day');
+    if (!dateInput) return;
+    const today = new Date();
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + 28);
+    dateInput.min = formatDateInputValue(today);
+    dateInput.max = formatDateInputValue(maxDate);
+  }
+
+  function formatLoadDayForCard(value) {
+    const date = new Date(value + 'T00:00:00');
+    if (isNaN(date)) return value;
+    const weekdays = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
+    const dayName = weekdays[date.getDay()];
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${dayName} ${day}/${month}`;
+  }
+
+  initLogin();
+  setLoadDayBounds();
+
+  function shouldShowTruckLength(truck) {
+    return truck === 'Carreta LS' || truck === 'Carreta 4 eixo';
+  }
+
+  document.querySelectorAll('.fruit-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.fruit-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      selectedFruit = this.dataset.fruit;
+      selectedEmoji = this.dataset.emoji;
+    });
+  });
+
+  const truckLengthSection = document.getElementById('truck-length-section');
+  const truckLengthInput = document.getElementById('truck-length');
+
+  document.querySelectorAll('.truck-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.truck-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      selectedTruck = this.dataset.truck;
+      if (shouldShowTruckLength(selectedTruck)) {
+        truckLengthSection.style.display = 'block';
+      } else {
+        truckLengthSection.style.display = 'none';
+        truckLengthInput.value = '';
+        selectedTruckLength = '';
+      }
+    });
+  });
+
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      selectedHasBox = this.dataset.box;
+
+      const capacitySection = document.getElementById('capacity-section');
+      const bodySection = document.getElementById('body-section');
+      if (selectedHasBox === 'sim') {
+        capacitySection.style.display = 'block';
+        bodySection.style.display = 'none';
+        selectedBody = null;
+        document.querySelectorAll('.body-btn').forEach(b => b.classList.remove('active'));
+      } else {
+        capacitySection.style.display = 'none';
+        bodySection.style.display = 'block';
+      }
+    });
+  });
+
+  document.querySelectorAll('.body-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.body-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      selectedBody = this.dataset.body;
+    });
+  });
+
+  function addCustomFruit() {
+    const inp = document.getElementById('custom-fruit-input');
+    const val = inp.value.trim();
+    if (!val) return;
+    const grid = document.getElementById('fruit-grid');
+    const btn = document.createElement('button');
+    btn.className = 'fruit-btn';
+    btn.dataset.fruit = val;
+    btn.dataset.emoji = '🍏';
+    btn.textContent = '🍏 ' + val;
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.fruit-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      selectedFruit = this.dataset.fruit;
+      selectedEmoji = this.dataset.emoji;
+    });
+    grid.appendChild(btn);
+    inp.value = '';
+    btn.click();
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function fitText(ctx, text, maxW, maxSize) {
+    let fs = maxSize;
+    ctx.font = '800 ' + fs + 'px "Arial Black", Arial, sans-serif';
+    while (ctx.measureText(text).width > maxW && fs > 28) {
+      fs -= 2;
+      ctx.font = '800 ' + fs + 'px "Arial Black", Arial, sans-serif';
+    }
+    return fs;
+  }
+
+  function wrapTextLines(ctx, text, maxW) {
+    const words = text.split(/\s+/).filter(Boolean);
+    const lines = [];
+    let current = '';
+
+    words.forEach(word => {
+      const test = current ? current + ' ' + word : word;
+      if (ctx.measureText(test).width <= maxW) {
+        current = test;
+      } else {
+        if (current) lines.push(current);
+        current = word;
+      }
+    });
+
+    if (current) lines.push(current);
+    return lines;
+  }
+
+  function drawResponsiveMultiline(ctx, text, x, y, maxW, maxH, maxSize, minSize, color) {
+    const cleanText = text.replace(/\s+/g, ' ').trim();
+    let fs = maxSize;
+    let lines = [];
+    let lineH = 0;
+
+    while (fs >= minSize) {
+      ctx.font = '800 ' + fs + 'px Arial, sans-serif';
+      lines = wrapTextLines(ctx, cleanText, maxW);
+      lineH = fs * 1.12;
+      const widest = Math.max(...lines.map(lineText => ctx.measureText(lineText).width));
+      if (lines.length * lineH <= maxH && widest <= maxW) break;
+      fs -= 2;
+    }
+
+    while (lines.length * lineH > maxH && fs > 14) {
+      fs -= 2;
+      ctx.font = '800 ' + fs + 'px Arial, sans-serif';
+      lines = wrapTextLines(ctx, cleanText, maxW);
+      lineH = fs * 1.08;
+    }
+
+    ctx.fillStyle = color;
+    ctx.font = '800 ' + fs + 'px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+
+    lines.forEach((lineText, index) => {
+      ctx.fillText(lineText, x, y + index * lineH);
+    });
+  }
+
+  function drawTruckIllustration(ctx, x, y, w, h, truck, body) {
+    const truckName = (truck || '').toLowerCase();
+    const bodyName = (body || 'Carga em caixas').toLowerCase();
+    const isTrailer = truckName.includes('carreta') || truckName.includes('carretinha');
+    const isLong = truckName.includes('ls') || truckName.includes('4') || truckName.includes('carreta');
+    const bodyW = isLong ? w * 0.66 : w * 0.54;
+    const cabW = w * 0.22;
+    const baseY = y + h * 0.68;
+    const bodyX = x + w * 0.08;
+    const bodyY = y + h * 0.22;
+    const bodyH = h * 0.38;
+    const cabX = bodyX + bodyW + (isTrailer ? w * 0.04 : w * 0.015);
+    const cabY = y + h * 0.28;
+
+    let bodyColor = '#dfe7df';
+    if (bodyName.includes('fria')) bodyColor = '#d9f0f7';
+    if (bodyName.includes('bau') || bodyName.includes('baú')) bodyColor = '#eef1f4';
+    if (bodyName.includes('madeira')) bodyColor = '#d6a15f';
+    if (bodyName.includes('gradinhas')) bodyColor = '#e7efe7';
+    if (bodyName.includes('graneleiro')) bodyColor = '#c9d6c3';
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(23,33,28,0.12)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 8;
+
+    ctx.fillStyle = bodyColor;
+    roundRect(ctx, bodyX, bodyY, bodyW, bodyH, 14);
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = '#123f2b';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    if (bodyName.includes('madeira')) {
+      ctx.strokeStyle = 'rgba(92,58,28,0.42)';
+      ctx.lineWidth = 3;
+      for (let i = 1; i < 4; i++) {
+        const py = bodyY + (bodyH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(bodyX + 10, py);
+        ctx.lineTo(bodyX + bodyW - 10, py);
+        ctx.stroke();
+      }
+    } else if (bodyName.includes('gradinhas')) {
+      ctx.strokeStyle = 'rgba(18,63,43,0.45)';
+      ctx.lineWidth = 3;
+      for (let i = 0; i < 6; i++) {
+        const px = bodyX + 18 + i * ((bodyW - 36) / 5);
+        ctx.beginPath();
+        ctx.moveTo(px, bodyY + 8);
+        ctx.lineTo(px, bodyY + bodyH - 8);
+        ctx.stroke();
+      }
+    } else if (bodyName.includes('graneleiro')) {
+      ctx.strokeStyle = 'rgba(18,63,43,0.35)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(bodyX + 12, bodyY + bodyH - 10);
+      ctx.lineTo(bodyX + bodyW - 12, bodyY + 12);
+      ctx.stroke();
+    } else if (bodyName.includes('fria')) {
+      ctx.fillStyle = '#ffffff';
+      roundRect(ctx, bodyX + 16, bodyY + 14, 54, 30, 8);
+      ctx.fill();
+      ctx.fillStyle = '#1f6b46';
+      ctx.font = '800 18px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('FRIO', bodyX + 43, bodyY + 30);
+    }
+
+    ctx.fillStyle = '#123f2b';
+    ctx.beginPath();
+    ctx.moveTo(cabX, cabY + bodyH);
+    ctx.lineTo(cabX, cabY + 28);
+    ctx.quadraticCurveTo(cabX + 8, cabY, cabX + 42, cabY);
+    ctx.lineTo(cabX + cabW - 18, cabY + 18);
+    ctx.quadraticCurveTo(cabX + cabW, cabY + 26, cabX + cabW, cabY + bodyH);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#cde8dd';
+    roundRect(ctx, cabX + 22, cabY + 18, cabW * 0.42, bodyH * 0.28, 8);
+    ctx.fill();
+
+    ctx.strokeStyle = '#123f2b';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(bodyX - 10, baseY);
+    ctx.lineTo(cabX + cabW + 8, baseY);
+    ctx.stroke();
+
+    const wheelCount = truckName.includes('bitruck') ? 4 : truckName.includes('4') ? 5 : isTrailer ? 4 : 3;
+    const firstWheel = bodyX + bodyW * 0.12;
+    const lastWheel = cabX + cabW * 0.72;
+    for (let i = 0; i < wheelCount; i++) {
+      const wx = firstWheel + (lastWheel - firstWheel) * (i / Math.max(wheelCount - 1, 1));
+      ctx.fillStyle = '#17211c';
+      ctx.beginPath();
+      ctx.arc(wx, baseY + 8, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(wx, baseY + 8, 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#647067';
+    ctx.font = '700 16px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const label = body ? body.toUpperCase() : 'COM CAIXAS';
+    const labelFs = fitText(ctx, label, w * 0.7, 18);
+    ctx.font = '700 ' + labelFs + 'px Arial, sans-serif';
+    ctx.fillText(label, x + w / 2, y + h - 12);
+    ctx.restore();
+  }
+
+  function slugifyAssetName(text) {
+    return (text || '')
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function getTruckPhotoCandidates(truck, hasBox, body) {
+    const truckSlug = slugifyAssetName(truck);
+    const loadSlug = hasBox === 'sim' ? 'com-caixas' : slugifyAssetName(body);
+    const exts = ['jpg', 'jpeg', 'png', 'webp'];
+    const names = [
+      truckSlug + '-' + loadSlug,
+      loadSlug,
+      truckSlug
+    ];
+
+    return names.flatMap(name => exts.map(ext => 'assets/caminhoes/' + name + '.' + ext));
+  }
+
+  function loadImage(src) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
+  async function findTruckPhoto(truck, hasBox, body) {
+    const candidates = getTruckPhotoCandidates(truck, hasBox, body);
+    for (const src of candidates) {
+      const img = await loadImage(src);
+      if (img) return img;
+    }
+    return null;
+  }
+
+  function drawImageCover(ctx, img, x, y, w, h, r) {
+    const scale = Math.max(w / img.width, h / img.height);
+    const sw = w / scale;
+    const sh = h / scale;
+    const sx = (img.width - sw) / 2;
+    const sy = (img.height - sh) / 2;
+
+    ctx.save();
+    roundRect(ctx, x, y, w, h, r);
+    ctx.clip();
+    ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+
+    const shade = ctx.createLinearGradient(x, y + h * 0.55, x, y + h);
+    shade.addColorStop(0, 'rgba(0,0,0,0)');
+    shade.addColorStop(1, 'rgba(0,0,0,0.42)');
+    ctx.fillStyle = shade;
+    ctx.fillRect(x, y, w, h);
+    ctx.restore();
+
+    ctx.strokeStyle = '#dfe7df';
+    ctx.lineWidth = 2;
+    roundRect(ctx, x, y, w, h, r);
+    ctx.stroke();
+  }
+
+  function drawImageContain(ctx, img, x, y, w, h) {
+    const scale = Math.min(w / img.width, h / img.height);
+    const dw = img.width * scale;
+    const dh = img.height * scale;
+    const dx = x + (w - dw) / 2;
+    const dy = y + (h - dh) / 2;
+    ctx.drawImage(img, dx, dy, dw, dh);
+  }
+
+  async function drawTruckPhoto(ctx, x, y, w, h, truck, hasBox, body) {
+    const img = await findTruckPhoto(truck, hasBox, body);
+    if (!img) return false;
+
+    drawImageCover(ctx, img, x, y, w, h, 22);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 18px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const label = hasBox === 'sim' ? 'COM CAIXAS' : body.toUpperCase();
+    const labelFs = fitText(ctx, label, w - 36, 20);
+    ctx.font = '800 ' + labelFs + 'px Arial, sans-serif';
+    ctx.fillText(label, x + w / 2, y + h - 24);
+    return true;
+  }
+
+  async function findBackgroundImage() {
+    const candidates = [
+      'assets/fundo-gdb.jpg',
+      'assets/fundo-gdb.jpeg',
+      'assets/fundo-gdb.png',
+      'assets/fundo-gdb.webp',
+      'assets/caminhoes/fundo-gdb.jpg',
+      'assets/caminhoes/fundo-gdb.jpeg',
+      'assets/caminhoes/fundo-gdb.png',
+      'assets/caminhoes/fundo-gdb.webp'
+    ];
+
+    for (const src of candidates) {
+      const img = await loadImage(src);
+      if (img) return img;
+    }
+    return null;
+  }
+
+  async function findLogoImage() {
+    const candidates = [
+      'assets/logo-gdb.png',
+      'assets/logo-gdb.jpg',
+      'assets/logo-gdb.jpeg',
+      'assets/logo-gdb.webp',
+      'assets/caminhoes/logo-gdb.png',
+      'assets/caminhoes/logo-gdb.jpg',
+      'assets/caminhoes/logo-gdb.jpeg',
+      'assets/caminhoes/logo-gdb.webp'
+    ];
+
+    for (const src of candidates) {
+      const img = await loadImage(src);
+      if (img) return img;
+    }
+    return null;
+  }
+
+  async function generateCard() {
+    const capMin = document.getElementById('cap-min').value;
+    const capMax = document.getElementById('cap-max').value;
+    selectedDay = document.getElementById('load-day').value;
+    selectedTruckLength = document.getElementById('truck-length').value.trim();
+    const notes = document.getElementById('notes').value.trim();
+    const origin = document.getElementById('origin').value.trim().toUpperCase();
+    const dest = document.getElementById('dest').value.trim().toUpperCase();
+
+    if (!selectedFruit) { alert('Selecione uma fruta!'); return; }
+    if (!selectedHasBox) { alert('Informe se é com caixa!'); return; }
+    if (selectedHasBox === 'nao' && !selectedBody) { alert('Selecione o tipo de carroceria!'); return; }
+    if (!selectedTruck) { alert('Selecione o tipo de caminhão!'); return; }
+    if (!selectedDay) { alert('Selecione a data de carregamento!'); return; }
+    if (!origin) { alert('Informe a cidade de origem!'); return; }
+    if (!dest) { alert('Informe a cidade de destino!'); return; }
+
+    const displayDay = formatLoadDayForCard(selectedDay);
+
+    const canvas = document.getElementById('card-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = 1080, H = 1350;
+
+    const CX = W / 2;
+    const green = '#123f2b';
+    const green2 = '#1f6b46';
+    const ink = '#17211c';
+    const muted = '#647067';
+    const line = '#dfe7df';
+
+    // ── shared card fill colour (same transparency as the header card) ──
+    const cardFill = 'rgba(255,255,255,0.94)';
+    const cardStroke = 'rgba(223,231,223,0.95)';
+
+    const backgroundImg = await findBackgroundImage();
+    if (backgroundImg) {
+      drawImageCover(ctx, backgroundImg, 0, 0, W, H, 0);
+    } else {
+      const bg = ctx.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, '#08130f');
+      bg.addColorStop(0.55, '#10281d');
+      bg.addColorStop(1, '#050706');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.fillRect(0, 0, W, H);
+
+    // ── Card 1: header ──
+    roundRect(ctx, 40, 36, 1000, 316, 34);
+    ctx.fillStyle = cardFill;
+    ctx.fill();
+    ctx.strokeStyle = cardStroke;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    const logoImg = await findLogoImage();
+    roundRect(ctx, 64, 58, 100, 100, 24);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    if (logoImg) {
+      drawImageContain(ctx, logoImg, 68, 62, 92, 92);
+    } else {
+      ctx.fillStyle = green;
+      roundRect(ctx, 64, 58, 100, 100, 24);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 34px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('GDB', 114, 110);
+    }
+
+    ctx.fillStyle = ink;
+    ctx.font = '800 38px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('GDB CARGAS', 186, 92);
+    ctx.fillStyle = muted;
+    ctx.font = '600 24px Arial, sans-serif';
+    ctx.fillText('Cotação de carga para transporte', 186, 132);
+
+    ctx.fillStyle = green2;
+    roundRect(ctx, 720, 72, 296, 62, 31);
+    ctx.fill();
+    const label = 'CARGA DISPONÍVEL';
+    const buttonX = 720;
+    const buttonY = 72;
+    const buttonW = 296;
+    const buttonH = 62;
+    const iconRadius = 14;
+    const iconGap = 10;
+    const contentPadding = 16;
+    const maxLabelWidth = buttonW - (contentPadding * 2) - (iconRadius * 2 + iconGap);
+    const labelFs = fitText(ctx, label, maxLabelWidth, 18);
+    ctx.font = '800 ' + labelFs + 'px Arial, sans-serif';
+    const labelWidth = ctx.measureText(label).width;
+    const totalContentWidth = iconRadius * 2 + iconGap + labelWidth;
+    let contentStartX = buttonX + (buttonW - totalContentWidth) / 2;
+    contentStartX = Math.max(contentStartX, buttonX + contentPadding);
+    contentStartX = Math.min(contentStartX, buttonX + buttonW - contentPadding - totalContentWidth);
+    const iconCenterX = contentStartX + iconRadius;
+    const iconCenterY = buttonY + buttonH / 2;
+    const labelX = iconCenterX + iconRadius + iconGap;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(iconCenterX, iconCenterY, iconRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = green2;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(iconCenterX - 4, iconCenterY + 1);
+    ctx.lineTo(iconCenterX - 1, iconCenterY + 5);
+    ctx.lineTo(iconCenterX + 8, iconCenterY - 4);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, labelX, iconCenterY);
+
+    ctx.fillStyle = ink;
+    ctx.font = '800 70px Arial, sans-serif';
+    const mainText = notes || 'Preciso de caminhão para carregamento';
+    drawResponsiveMultiline(ctx, mainText, 64, 238, 900, 104, 64, 34, ink);
+
+    // ── Card 2: quantidade / carroceria + tipo de caminhão ──
+    roundRect(ctx, 64, 378, 952, 250, 36);
+    ctx.fillStyle = cardFill;
+    ctx.fill();
+    ctx.strokeStyle = cardStroke;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = muted;
+    ctx.font = '700 22px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(selectedHasBox === 'sim' ? 'QUANTIDADE' : 'CARROCERIA', 112, 442);
+    ctx.fillText('TIPO DE CAMINHÃO', 610, 442);
+
+    if (selectedHasBox === 'sim') {
+      ctx.fillStyle = ink;
+      const capacityText = capMin + ' a ' + capMax;
+      const capacityFs = fitText(ctx, capacityText, 380, 66);
+      ctx.font = '800 ' + capacityFs + 'px Arial, sans-serif';
+      ctx.fillText(capacityText, 112, 524);
+      ctx.font = '800 34px Arial, sans-serif';
+      ctx.fillStyle = muted;
+      ctx.fillText('CAIXAS', 112, 574);
+    } else {
+      const bodyTextNew = selectedBody.toUpperCase();
+      const bodyFsNew = fitText(ctx, bodyTextNew, 380, 52);
+      ctx.fillStyle = ink;
+      ctx.font = '800 ' + bodyFsNew + 'px Arial, sans-serif';
+      ctx.fillText(bodyTextNew, 112, 530);
+    }
+
+    const truckTextBase = selectedTruck.toUpperCase();
+    const truckLengthSuffix = shouldShowTruckLength(selectedTruck) && selectedTruckLength ? ' - ' + selectedTruckLength.replace(/m$/i, '').trim() + 'm' : '';
+    const truckTextNew = (truckTextBase + truckLengthSuffix).trim();
+    const truckFsNew = fitText(ctx, truckTextNew, 360, 42);
+    ctx.font = '800 ' + truckFsNew + 'px Arial, sans-serif';
+    ctx.fillStyle = ink;
+    ctx.fillText(truckTextNew, 610, 520);
+
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(540, 420);
+    ctx.lineTo(540, 586);
+    ctx.stroke();
+
+    // ── Card 3: rota ──
+    roundRect(ctx, 64, 672, 952, 360, 36);
+    ctx.fillStyle = cardFill;
+    ctx.fill();
+    ctx.strokeStyle = cardStroke;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = muted;
+    ctx.font = '700 22px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('ROTA', 112, 736);
+
+    roundRect(ctx, 650, 724, 310, 278, 28);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    if (logoImg) {
+      drawImageContain(ctx, logoImg, 654, 726, 302, 272);
+    } else {
+      ctx.fillStyle = green;
+      roundRect(ctx, 704, 778, 202, 128, 24);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 54px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('GDB', 805, 842);
+    }
+
+    ctx.strokeStyle = green2;
+    ctx.lineWidth = 6;
+    ctx.setLineDash([18, 16]);
+    ctx.beginPath();
+    ctx.moveTo(158, 816);
+    ctx.lineTo(158, 932);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = green2;
+    ctx.beginPath();
+    ctx.arc(158, 800, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(158, 800, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#e24a3b';
+    ctx.beginPath();
+    ctx.arc(158, 948, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(158, 948, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = muted;
+    ctx.font = '700 20px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('ORIGEM', 214, 780);
+    const originFsNew = fitText(ctx, origin, 400, 52);
+    ctx.fillStyle = ink;
+    ctx.font = '800 ' + originFsNew + 'px Arial, sans-serif';
+    ctx.fillText(origin, 214, 836);
+
+    ctx.fillStyle = muted;
+    ctx.font = '700 20px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('DESTINO', 214, 928);
+    const destFsNew = fitText(ctx, dest, 400, 52);
+    ctx.fillStyle = ink;
+    ctx.font = '800 ' + destFsNew + 'px Arial, sans-serif';
+    ctx.fillText(dest, 214, 984);
+
+    // ── Card 4: carregamento + mercadoria ──
+    roundRect(ctx, 64, 1072, 456, 126, 28);
+    ctx.fillStyle = green;
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 20px Arial, sans-serif';
+    ctx.fillText('CARREGAMENTO', 106, 1120);
+    ctx.font = '800 32px Arial, sans-serif';
+    ctx.fillText(displayDay.toUpperCase(), 106, 1162);
+
+    roundRect(ctx, 560, 1072, 456, 126, 28);
+    ctx.fillStyle = cardFill;
+    ctx.fill();
+    ctx.strokeStyle = cardStroke;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = muted;
+    ctx.font = '700 20px Arial, sans-serif';
+    ctx.fillText('MERCADORIA', 602, 1120);
+    const fruitTextNew = selectedFruit.toUpperCase();
+    const fruitFsNew = fitText(ctx, fruitTextNew, 370, 36);
+    ctx.fillStyle = ink;
+    ctx.font = '800 ' + fruitFsNew + 'px Arial, sans-serif';
+    ctx.fillText(fruitTextNew, 602, 1162);
+
+    // ── WhatsApp bar ──
+    roundRect(ctx, 64, 1234, 952, 78, 24);
+    ctx.fillStyle = '#128C7E';
+    ctx.fill();
+
+    const contactText = 'ALEXANDRE  55 17 99783 5253';
+    ctx.font = '800 30px Arial, sans-serif';
+    const contactIconRadius = 24;
+    const contactIconGap = 16;
+    const contactTextWidth = ctx.measureText(contactText).width;
+    const contactTotalWidth = contactIconRadius * 2 + contactIconGap + contactTextWidth;
+    const contactStartX = CX - contactTotalWidth / 2;
+    const contactIconCenterX = contactStartX + contactIconRadius;
+    const contactIconCenterY = 1275;
+
+    ctx.fillStyle = '#25D366';
+    ctx.beginPath();
+    ctx.arc(contactIconCenterX, contactIconCenterY, contactIconRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 22px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('WA', contactIconCenterX, contactIconCenterY + 1);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 30px Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(contactText, contactIconCenterX + contactIconRadius + contactIconGap, contactIconCenterY);
+
+    document.getElementById('preview-wrap').style.display = 'block';
+    document.getElementById('preview-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function downloadCard() {
+    const canvas = document.getElementById('card-canvas');
+    const a = document.createElement('a');
+    a.download = 'frete-alexandre.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+</script>
+</body>
+</html>
