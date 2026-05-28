@@ -236,6 +236,13 @@
   const auth = getAuth(app);
 
   // --- LÓGICA DE INTERFACE ---
+  let selectedFruit = null;
+    let selectedEmoji = null;
+    let selectedTruck = null;
+    let selectedHasBox = "sim"; // Padrão
+    let selectedBody = null;
+    let selectedDay = null;
+    let selectedTruckLength = "";
 
   function showApp() {
     document.getElementById('login-screen').style.display = 'none';
@@ -313,7 +320,7 @@
     return `${dayName} ${day}/${month}`;
   }
 
-  initLogin();
+  
   setLoadDayBounds();
 
   function shouldShowTruckLength(truck) {
@@ -1038,6 +1045,7 @@
   }
 
   // Criando a "ponte" para os botões do HTML funcionarem
+
 window.handleLogout = handleLogout;
 window.addCustomFruit = addCustomFruit;
 window.generateCard = generateCard;
