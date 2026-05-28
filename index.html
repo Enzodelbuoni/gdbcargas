@@ -1036,6 +1036,12 @@
     a.href = canvas.toDataURL('image/png');
     a.click();
   }
+
+  // Criando a "ponte" para os botões do HTML funcionarem
+window.handleLogout = handleLogout;
+window.addCustomFruit = addCustomFruit;
+window.generateCard = generateCard;
+window.downloadCard = downloadCard;
 </script>
 </body>
 </html>
