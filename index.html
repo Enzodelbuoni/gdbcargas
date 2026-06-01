@@ -157,6 +157,10 @@
       <button class="body-btn" data-body="Com Gradinhas">Com Gradinhas</button>
       <button class="body-btn" data-body="Graneleiro">Graneleiro</button>
     </div>
+    <div class="custom-fruit-row">
+      <input type="text" id="custom-body-input" placeholder="Outra carroceria..." />
+      <button type="button" onclick="addCustomBody()">+ Usar</button>
+    </div>
   </div>
 
   <div class="section">
@@ -344,6 +348,7 @@
         capacitySection.style.display = 'block';
         bodySection.style.display = 'none';
         selectedBody = null;
+        document.getElementById('custom-body-input').value = '';
         document.querySelectorAll('.body-btn').forEach(b => b.classList.remove('active'));
       } else {
         capacitySection.style.display = 'none';
@@ -357,7 +362,45 @@
       document.querySelectorAll('.body-btn').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
       selectedBody = this.dataset.body;
+      document.getElementById('custom-body-input').value = '';
     });
+  });
+
+  function addCustomBody() {
+    const inp = document.getElementById('custom-body-input');
+    const val = inp.value.trim();
+    if (!val) return;
+    const grid = document.getElementById('body-grid');
+    const btn = document.createElement('button');
+    btn.className = 'body-btn';
+    btn.dataset.body = val;
+    btn.textContent = val;
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.body-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      selectedBody = this.dataset.body;
+      document.getElementById('custom-body-input').value = '';
+    });
+    grid.appendChild(btn);
+    document.querySelectorAll('.body-btn').forEach(b => b.classList.remove('active'));
+    inp.value = '';
+    btn.click();
+  }
+
+  document.getElementById('custom-body-input').addEventListener('input', function() {
+    const val = this.value.trim();
+    if (!val) {
+      selectedBody = null;
+      return;
+    }
+    document.querySelectorAll('.body-btn').forEach(b => b.classList.remove('active'));
+    selectedBody = val;
+  });
+
+  document.getElementById('custom-body-input').addEventListener('keydown', function(event) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    addCustomBody();
   });
 
   function addCustomFruit() {
@@ -417,7 +460,21 @@
         current = test;
       } else {
         if (current) lines.push(current);
-        current = word;
+        if (ctx.measureText(word).width <= maxW) {
+          current = word;
+        } else {
+          let chunk = '';
+          for (const char of word) {
+            const nextChunk = chunk + char;
+            if (ctx.measureText(nextChunk).width <= maxW || !chunk) {
+              chunk = nextChunk;
+            } else {
+              lines.push(chunk);
+              chunk = char;
+            }
+          }
+          current = chunk;
+        }
       }
     });
     if (current) lines.push(current);
@@ -662,6 +719,10 @@
 
     if (!selectedFruit) { alert('Selecione uma fruta!'); return; }
     if (!selectedHasBox) { alert('Informe se é com caixa!'); return; }
+    if (selectedHasBox === 'nao') {
+      const customBody = document.getElementById('custom-body-input').value.trim();
+      if (customBody) selectedBody = customBody;
+    }
     if (selectedHasBox === 'nao' && !selectedBody) { alert('Selecione o tipo de carroceria!'); return; }
     if (!selectedTruck) { alert('Selecione o tipo de caminhão!'); return; }
     if (!selectedDay) { alert('Selecione a data de carregamento!'); return; }
@@ -758,7 +819,7 @@
 
     // Card 1 vai de Y=36 a Y=396. Texto principal: topo=230, maxH=155 => fundo=385 < 396 ✅
     ctx.fillStyle = ink;
-    const mainText = notes || 'Preciso de caminhão para carregamento';
+    const mainText = notes || 'PRECISO DE CAMINHÃO PARA CARREGAMENTO';
     drawResponsiveMultiline(ctx, mainText, 64, 230, 960, 155, 72, 72, ink);
 
     // ── Card 2: quantidade / carroceria + tipo de caminhão ──
@@ -791,11 +852,7 @@
       ctx.fillText('CAIXAS', 112, card2Top + 200);
     } else {
       const bodyTextNew = selectedBody.toUpperCase();
-      const bodyFsNew = fitText(ctx, bodyTextNew, 380, 56);
-      ctx.fillStyle = ink;
-      ctx.font = '800 ' + bodyFsNew + 'px Arial, sans-serif';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText(bodyTextNew, 112, card2Top + 155);
+      drawResponsiveMultiline(ctx, bodyTextNew, 112, card2Top + 94, 410, 150, 52, 28, ink);
     }
 
     // Valor do tipo de caminhão — topo = card2Top+68 (abaixo do label+gap)
@@ -846,12 +903,11 @@
 
     const pinX = 158;
     const textX = 196;
-    const routeTextMaxW = 390;
+    const routeTextMaxW = 420;
 
-    // originPinY: +105 do topo (mais abaixo do label ROTA)
-    // destPinY: +232 do topo
-    const originPinY = routeCard3Top + 105;
-    const destPinY   = routeCard3Top + 232;
+    // originPinY: +95 do topo. destPinY sobe um pouco para o destino ganhar altura.
+    const originPinY = routeCard3Top + 95;
+    const destPinY   = routeCard3Top + 200;
 
     // Texto origem: topo = originPinY+22=836, maxH = destPinY-22-836 = 954-22-836 = 96 ✅
     // Texto destino: topo = destPinY+22=976,  maxH = routeCard3Bot-16-976 = 1046-16-976 = 54
@@ -879,8 +935,7 @@
     ctx.fillStyle = muted; ctx.font = '700 28px Arial, sans-serif';
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
     ctx.fillText('ORIGEM', textX, originPinY - 6);
-    // valor topo=originPinY+22=836, maxH=destPinY-22-836=96
-    drawResponsiveMultiline(ctx, origin, textX, originPinY + 22, routeTextMaxW, destPinY - 22 - (originPinY + 22), 48, 22, ink);
+    drawResponsiveMultiline(ctx, origin, textX, originPinY + 18, routeTextMaxW, destPinY - 20 - (originPinY + 18), 44, 24, ink);
 
     // DESTINO — label acima do pin, valor abaixo (clipado para não vazar)
     ctx.fillStyle = muted; ctx.font = '700 28px Arial, sans-serif';
@@ -888,9 +943,9 @@
     ctx.fillText('DESTINO', textX, destPinY - 6);
     ctx.save();
     ctx.beginPath();
-    roundRect(ctx, textX, destPinY + 18, routeTextMaxW, routeCard3Bot - (destPinY + 18) - 12, 4);
+    roundRect(ctx, textX, destPinY + 14, routeTextMaxW, routeCard3Bot - (destPinY + 14) - 14, 4);
     ctx.clip();
-    drawResponsiveMultiline(ctx, dest, textX, destPinY + 22, routeTextMaxW, routeCard3Bot - (destPinY + 22) - 12, 48, 22, ink);
+    drawResponsiveMultiline(ctx, dest, textX, destPinY + 18, routeTextMaxW, routeCard3Bot - (destPinY + 18) - 14, 44, 24, ink);
     ctx.restore();
 
     // ── Cards 4 e 5: carregamento + mercadoria ──
@@ -961,6 +1016,7 @@
 
   window.handleLogout = handleLogout;
   window.addCustomFruit = addCustomFruit;
+  window.addCustomBody = addCustomBody;
   window.generateCard = generateCard;
   window.downloadCard = downloadCard;
 </script>
