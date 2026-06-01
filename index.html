@@ -173,6 +173,7 @@
       <button class="truck-btn" data-truck="Carretinha 2 eixos">Carretinha 2 eixos</button>
       <button class="truck-btn" data-truck="Carreta LS">Carreta LS</button>
       <button class="truck-btn" data-truck="Carreta 4 eixo">Carreta 4 eixo</button>
+      <button class="truck-btn" data-truck="Carreta LS ou 4 eixo">Carreta LS ou 4 eixo</button>
     </div>
   </div>
 
@@ -195,7 +196,6 @@
   <div class="section">
     <h3>Observações</h3>
     <div class="field">
-      <label>Texto principal do card</label>
       <textarea id="notes" placeholder="Ex: Preciso de caminhão refrigerado para carga urgente"></textarea>
     </div>
   </div>
@@ -819,12 +819,12 @@
 
     // Card 1 vai de Y=36 a Y=396. Texto principal: topo=230, maxH=155 => fundo=385 < 396 ✅
     ctx.fillStyle = ink;
-    const mainText = notes || 'PRECISO DE CAMINHÃO PARA CARREGAMENTO';
+    const mainText = 'PRECISO DE CAMINHÃO PARA CARREGAMENTO';
     drawResponsiveMultiline(ctx, mainText, 64, 230, 960, 155, 72, 72, ink);
 
     // ── Card 2: quantidade / carroceria + tipo de caminhão ──
     const card2Top = 420;
-    const card2H   = 280;
+    const card2H   = 320;
     const card2Bot = card2Top + card2H; // 700
     roundRect(ctx, 64, card2Top, 952, card2H, 36);
     ctx.fillStyle = cardFill;
@@ -852,7 +852,7 @@
       ctx.fillText('CAIXAS', 112, card2Top + 200);
     } else {
       const bodyTextNew = selectedBody.toUpperCase();
-      drawResponsiveMultiline(ctx, bodyTextNew, 112, card2Top + 94, 410, 150, 52, 28, ink);
+      drawResponsiveMultiline(ctx, bodyTextNew, 112, card2Top + 90, 410, 122, 50, 26, ink);
     }
 
     // Valor do tipo de caminhão — topo = card2Top+68 (abaixo do label+gap)
@@ -863,8 +863,25 @@
     ctx.beginPath();
     roundRect(ctx, 562, card2Top + 8, 446, card2H - 16, 28);
     ctx.clip();
-    drawResponsiveMultiline(ctx, truckTextNew, 610, card2Top + 68, 370, card2H - 68 - 20, 52, 28, ink);
+    drawResponsiveMultiline(ctx, truckTextNew, 610, card2Top + 90, 370, 120, 52, 28, ink);
     ctx.restore();
+
+    if (notes) {
+      const obsTop = card2Top + 226;
+      const obsH = card2Bot - obsTop - 18;
+      ctx.fillStyle = 'rgba(31,107,70,0.10)';
+      roundRect(ctx, 94, obsTop, 892, obsH, 18);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(31,107,70,0.22)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.save();
+      ctx.beginPath();
+      roundRect(ctx, 106, obsTop + 8, 868, obsH - 16, 12);
+      ctx.clip();
+      drawResponsiveMultiline(ctx, 'OBS: ' + notes, 118, obsTop + 10, 844, obsH - 18, 36, 22, green);
+      ctx.restore();
+    }
 
     ctx.strokeStyle = line; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(540, card2Top + 20); ctx.lineTo(540, card2Bot - 20); ctx.stroke();
