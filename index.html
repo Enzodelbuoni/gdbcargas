@@ -9,7 +9,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f0; min-height: 100vh; padding: 1rem; }
     h1 { font-size: 18px; font-weight: 700; color: #1a472a; margin-bottom: 16px; text-align: center; }
-    .wrap { max-width: 480px; margin: 0 auto; display: none; }
+    .wrap { width: 100%; max-width: 480px; margin: 0 auto; display: none; }
     #login-screen { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 2rem); }
     #login-card { width: 100%; max-width: 420px; background: #ffffff; border: 1px solid #e0e0d8; border-radius: 18px; padding: 28px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08); }
     #login-card h1 { font-size: 24px; margin-bottom: 18px; color: #123f2b; text-align: center; }
@@ -17,10 +17,10 @@
     #login-card .gen-btn { margin-top: 6px; }
     .section { background: #fff; border: 1px solid #e0e0d8; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 12px; }
     .section h3 { font-size: 11px; font-weight: 600; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .field { margin-bottom: 10px; }
+    .field { margin-bottom: 10px; min-width: 0; }
     .field label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
     .field input, .field select, .field textarea {
-      width: 100%; font-size: 14px; padding: 9px 12px;
+      width: 100%; max-width: 100%; min-width: 0; font-size: 14px; padding: 9px 12px;
       border: 1px solid #ddd; border-radius: 8px; outline: none;
       background: #fafafa; color: #111;
     }
@@ -79,6 +79,18 @@
       white-space: nowrap;
     }
     .custom-fruit-row button:hover { background: #e4e4dc; }
+
+    @media (max-width: 520px) {
+      .wrap { padding: 0 0.75rem; }
+      #login-card { padding: 22px; }
+      .row2, .fruit-grid, .truck-grid, .choice-grid, .body-grid {
+        grid-template-columns: 1fr;
+      }
+      .custom-fruit-row { flex-direction: column; }
+      .custom-fruit-row button { width: 100%; }
+      .gen-btn, .dl-btn { font-size: 14px; }
+      .section { padding: 0.95rem 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -187,9 +199,9 @@
   </div>
 
   <div class="section">
-    <h3>Dia de carregamento</h3>
+    <h3>Data de carregamento</h3>
     <div class="field">
-      <label>Data ou dia</label>
+      <label>Data</label>
       <input type="date" id="load-day" />
     </div>
   </div>
