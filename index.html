@@ -119,6 +119,7 @@
       <button class="fruit-btn" data-fruit="Uva" data-emoji="🍇">🍇 Uva</button>
       <button class="fruit-btn" data-fruit="Mamão" data-emoji="🍈">🍈 Mamão</button>
       <button class="fruit-btn" data-fruit="Banana" data-emoji="🍌">🍌 Banana</button>
+      <button class="fruit-btn" data-fruit="Abóbora" data-emoji="🎃">🎃 Abóbora</button>
     </div>
     <div class="custom-fruit-row">
       <input type="text" id="custom-fruit-input" placeholder="Outra fruta..." />
@@ -384,7 +385,7 @@
     grid.appendChild(btn);
     document.querySelectorAll('.body-btn').forEach(b => b.classList.remove('active'));
     inp.value = '';
-    btn.click();
+    setTimeout(() => btn.click(), 0);
   }
 
   document.getElementById('custom-body-input').addEventListener('input', function() {
@@ -421,7 +422,7 @@
     });
     grid.appendChild(btn);
     inp.value = '';
-    btn.click();
+    setTimeout(() => btn.click(), 0);
   }
 
   // ── Canvas helpers ──────────────────────────────────────────────
@@ -819,7 +820,7 @@
 
     // Card 1 vai de Y=36 a Y=396. Texto principal: topo=230, maxH=155 => fundo=385 < 396 ✅
     ctx.fillStyle = ink;
-    const mainText = 'PRECISO DE CAMINHÃO PARA CARREGAMENTO';
+    const mainText = selectedHasBox === 'sim' ? 'PRECISO DE CAMINHÃO COM CAIXA PARA CARREGAMENTO' : 'PRECISO DE CAMINHÃO PARA CARREGAMENTO';
     drawResponsiveMultiline(ctx, mainText, 64, 230, 960, 155, 72, 72, ink);
 
     // ── Card 2: quantidade / carroceria + tipo de caminhão ──
