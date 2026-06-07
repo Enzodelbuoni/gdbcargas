@@ -15,7 +15,7 @@
     #login-card h1 { font-size: 24px; margin-bottom: 18px; color: #123f2b; text-align: center; }
     #login-card .field { margin-bottom: 14px; }
     #login-card .gen-btn { margin-top: 6px; }
-    .section { background: #fff; border: 1px solid #e0e0d8; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 12px; }
+    .section { background: #fff; border: 1px solid #e0e0d8; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 12px; overflow: hidden; }
     .section h3 { font-size: 11px; font-weight: 600; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
     .field { margin-bottom: 10px; min-width: 0; }
     .field label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
@@ -24,7 +24,7 @@
       border: 1px solid #ddd; border-radius: 8px; outline: none;
       background: #fafafa; color: #111;
     }
-    .field textarea { min-height: 76px; resize: vertical; font-family: inherit; line-height: 1.35; }
+    .field textarea { min-height: 76px; resize: vertical; font-family: inherit; line-height: 1.35; position: relative; z-index: 10; }
     .field input:focus, .field textarea:focus { border-color: #1a472a; background: #fff; }
     .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .fruit-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
@@ -427,8 +427,8 @@
     const btn = document.createElement('button');
     btn.className = 'fruit-btn';
     btn.dataset.fruit = val;
-    btn.dataset.emoji = '🍏';
-    btn.textContent = '🍏 ' + val;
+    btn.dataset.emoji = '';
+    btn.textContent = val;
     btn.addEventListener('click', function() {
       document.querySelectorAll('.fruit-btn').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
@@ -999,7 +999,7 @@
     ctx.fillStyle = muted;
     ctx.font = '700 42px Arial, sans-serif';
     ctx.fillText('MERCADORIA', 602, card4Top + 50);
-    const fruitTextNew = selectedFruit.toUpperCase();
+    const fruitTextNew = (selectedEmoji ? selectedEmoji + ' ' : '') + selectedFruit.toUpperCase();
     const fruitFsNew = fitText(ctx, fruitTextNew, 370, 42);
     ctx.fillStyle = ink;
     ctx.font = '800 ' + fruitFsNew + 'px Arial, sans-serif';
