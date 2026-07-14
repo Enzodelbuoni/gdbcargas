@@ -66,8 +66,14 @@
       border: 1.5px solid #1a472a; border-radius: 12px; font-size: 14px;
       font-weight: 600; cursor: pointer; margin-top: 10px;
       display: flex; align-items: center; justify-content: center; gap: 8px;
+      touch-action: manipulation;
     }
     .dl-btn:hover { background: #f0f7f2; }
+    .dl-btn:disabled { opacity: 0.65; cursor: wait; }
+    .download-status {
+      min-height: 18px; margin-top: 8px; color: #647067; font-size: 12px;
+      line-height: 1.35; text-align: center;
+    }
     .custom-fruit-row { display: flex; gap: 6px; margin-top: 8px; }
     .custom-fruit-row input {
       flex: 1; font-size: 13px; padding: 8px 10px;
@@ -232,7 +238,8 @@
 
   <div id="preview-wrap">
     <canvas id="card-canvas" width="1080" height="1350"></canvas>
-    <button class="dl-btn" onclick="downloadCard()">⬇ Baixar imagem para WhatsApp</button>
+    <button class="dl-btn" onclick="downloadCard(this)">⬇ Baixar / compartilhar no WhatsApp</button>
+    <p class="download-status" id="download-status" aria-live="polite"></p>
   </div>
 </div>
 
@@ -1039,12 +1046,110 @@
     document.getElementById('preview-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  function downloadCard() {
-    const canvas = document.getElementById('card-canvas');
+  function setDownloadStatus(message) {
+    const status = document.getElementById('download-status');
+    if (status) status.textContent = message || '';
+  }
+
+  function canvasToBlob(canvas, type, quality) {
+    return new Promise((resolve, reject) => {
+      if (canvas.toBlob) {
+        canvas.toBlob(blob => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Não foi possível gerar a imagem.'));
+          }
+        }, type, quality);
+        return;
+      }
+
+      try {
+        resolve(dataUrlToBlob(canvas.toDataURL(type, quality)));
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  function dataUrlToBlob(dataUrl) {
+    const parts = dataUrl.split(',');
+    const mimeMatch = parts[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    const binary = atob(parts[1]);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+
+  function canvasToBlobSync(canvas, type, quality) {
+    return dataUrlToBlob(canvas.toDataURL(type, quality));
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.download = 'frete-alexandre.png';
-    a.href = canvas.toDataURL('image/png');
+    a.download = filename;
+    a.href = url;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
     a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  }
+
+  async function downloadCard(button) {
+    const canvas = document.getElementById('card-canvas');
+    const filename = 'frete-alexandre.png';
+    const originalText = button ? button.textContent : '';
+
+    if (!canvas) {
+      alert('Gere o card antes de baixar.');
+      return;
+    }
+
+    try {
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Preparando imagem...';
+      }
+      setDownloadStatus('Preparando a imagem...');
+
+      const blob = canvasToBlobSync(canvas, 'image/png');
+      const file = new File([blob], filename, { type: 'image/png', lastModified: Date.now() });
+      const canShareFile = navigator.share && navigator.canShare && navigator.canShare({ files: [file] });
+
+      if (canShareFile) {
+        setDownloadStatus('Abrindo compartilhamento do iPhone...');
+        await navigator.share({
+          files: [file],
+          title: 'Card de frete GDB Cargas',
+          text: 'Card de frete GDB Cargas'
+        });
+        setDownloadStatus('Imagem pronta para enviar no WhatsApp.');
+      } else {
+        downloadBlob(blob, filename);
+        setDownloadStatus('Imagem baixada. Abra pelo WhatsApp ou pela galeria/arquivos.');
+      }
+    } catch (error) {
+      if (error && error.name === 'AbortError') {
+        setDownloadStatus('Compartilhamento cancelado.');
+      } else {
+        try {
+          const fallbackBlob = await canvasToBlob(canvas, 'image/png');
+          downloadBlob(fallbackBlob, filename);
+          setDownloadStatus('Compartilhamento indisponível. A imagem foi baixada.');
+        } catch (fallbackError) {
+          console.error('Erro ao baixar imagem:', fallbackError);
+          setDownloadStatus('Não foi possível baixar a imagem. Tente gerar o card novamente.');
+        }
+      }
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
   }
 
   window.handleLogout = handleLogout;
