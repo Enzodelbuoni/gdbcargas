@@ -1122,9 +1122,7 @@
       if (canShareFile) {
         setDownloadStatus('Abrindo compartilhamento do iPhone...');
         await navigator.share({
-          files: [file],
-          title: 'Card de frete GDB Cargas',
-          text: 'Card de frete GDB Cargas'
+          files: [file]
         });
         setDownloadStatus('Imagem pronta para enviar no WhatsApp.');
       } else {
