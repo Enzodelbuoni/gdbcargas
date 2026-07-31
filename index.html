@@ -355,8 +355,8 @@
       <div class="section">
         <h3>Fruta</h3>
         <div class="fruit-grid" id="fruit-grid">
-          <button class="fruit-btn" data-fruit="Limão" data-emoji="🍋">
-            🍋 Limão
+          <button class="fruit-btn" data-fruit="Limão" data-emoji="�">
+            🍋‍🟩 Limão
           </button>
           <button class="fruit-btn" data-fruit="Abacate" data-emoji="🥑">
             🥑 Abacate
@@ -367,14 +367,14 @@
           <button class="fruit-btn" data-fruit="Tomate" data-emoji="🍅">
             🍅 Tomate
           </button>
+          <button class="fruit-btn" data-fruit="Maracujá" data-emoji="🥭">
+            🍋 Maracujá
+          </button>
           <button class="fruit-btn" data-fruit="Batata Doce" data-emoji="🍠">
             🍠 Batata Doce
           </button>
           <button class="fruit-btn" data-fruit="Manga" data-emoji="🥭">
             🥭 Manga
-          </button>
-          <button class="fruit-btn" data-fruit="Maracujá" data-emoji="🥭">
-            🥭 Maracujá
           </button>
           <button class="fruit-btn" data-fruit="Maçã" data-emoji="🍎">
             🍎 Maçã
@@ -1507,9 +1507,9 @@
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        const pinX = 140;
-        const textX = 174;
-        const routeTextMaxW = 820;
+        const pinX = 100;
+        const textX = 134;
+        const routeTextMaxW = 860;
 
         // Pins da rota distribuidos no card mais alto para origem e destino respirarem melhor.
         const originPinY = routeCard3Top + 80;
@@ -1597,9 +1597,9 @@
         const card4Top = routeCard3Top + routeCard3H + 22;
 
         roundRect(ctx, 40, card4Top, 480, 134, 28);
-        ctx.fillStyle = green;
+        ctx.fillStyle = cardFill;
         ctx.fill();
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#000000";
         ctx.font = "700 42px Arial, sans-serif";
         ctx.textAlign = "left";
         ctx.fillText("CARREGAMENTO", 82, card4Top + 50);
