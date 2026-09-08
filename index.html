@@ -551,6 +551,17 @@
         </div>
       </div>
 
+      <div class="section">
+        <h3>Responsável pela imagem</h3>
+        <div class="field">
+          <label>Quem está fazendo a imagem?</label>
+          <select id="image-owner">
+            <option value="Alexandre" selected>Alexandre</option>
+            <option value="Enzo">Enzo</option>
+          </select>
+        </div>
+      </div>
+
       <button class="gen-btn" onclick="generateCard()">✦ Gerar card</button>
 
       <div id="preview-wrap">
@@ -590,6 +601,21 @@
       let selectedBody = null;
       let selectedDay = null;
       let selectedTruckLength = "";
+      let selectedImageOwner = "Alexandre";
+
+      function getImageOwnerData() {
+        if (selectedImageOwner === "Enzo") {
+          return {
+            name: "Enzo",
+            phone: "17 99721 6930",
+          };
+        }
+
+        return {
+          name: "Alexandre",
+          phone: "17 99783 5253",
+        };
+      }
 
       function showApp() {
         document.getElementById("login-screen").style.display = "none";
@@ -632,6 +658,11 @@
       document
         .getElementById("login-form")
         .addEventListener("submit", handleLogin);
+
+      const imageOwnerSelect = document.getElementById("image-owner");
+      imageOwnerSelect.addEventListener("change", function () {
+        selectedImageOwner = this.value || "Alexandre";
+      });
 
       function formatDateInputValue(date) {
         const y = date.getFullYear();
@@ -1269,6 +1300,7 @@
         }
 
         const displayDay = formatLoadDayForCard(selectedDay);
+        const imageOwnerData = getImageOwnerData();
 
         const canvas = document.getElementById("card-canvas");
         const ctx = canvas.getContext("2d");
@@ -1652,7 +1684,7 @@
           ctx.fillStyle = "#128C7E";
           ctx.fill();
 
-          const contactText = "ALEXANDRE   17 99783 5253";
+          const contactText = `${imageOwnerData.name.toUpperCase()}   ${imageOwnerData.phone}`;
           ctx.font = "800 42px Arial, sans-serif";
           const contactIconRadius = 32;
           const contactIconGap = 18;
@@ -1754,7 +1786,8 @@
 
       async function downloadCard(button) {
         const canvas = document.getElementById("card-canvas");
-        const filename = "frete-alexandre.png";
+        const ownerSlug = slugifyAssetName(selectedImageOwner || "Alexandre");
+        const filename = `frete-${ownerSlug}.png`;
         const originalText = button ? button.textContent : "";
 
         if (!canvas) {
